@@ -41,3 +41,7 @@
 
 /* Pulso de cor mais nítido, sem perder a estrutura dourada */
 .node.neuron.major i{box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 19%,transparent),0 0 10px color-mix(in srgb,var(--c) 82%,transparent),0 0 27px color-mix(in srgb,var(--c) 62%,transparent),0 0 44px color-mix(in srgb,var(--c) 30%,transparent)!important}.node.neuron:not(.major) i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 17%,transparent),0 0 10px color-mix(in srgb,var(--c) 77%,transparent),0 0 23px color-mix(in srgb,var(--c) 45%,transparent)!important}.node.neuron.major:before{content:'';position:absolute;z-index:-1;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 40%,transparent),transparent 68%);filter:blur(4px);opacity:.78}.node.neuron.selected i,.node.neuron.expanded i{box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 26%,transparent),0 0 18px color-mix(in srgb,var(--c) 100%,transparent),0 0 42px color-mix(in srgb,var(--c) 70%,transparent)!important}
+
+
+/* O núcleo pulsa pela luz, sem anel externo */
+.brain-hub:before{inset:-29px;border:0;background:radial-gradient(circle,rgba(244,197,79,.34) 0%,rgba(213,154,38,.16) 29%,rgba(196,130,26,.055) 52%,transparent 72%);filter:blur(5px);animation:haloBreath 2.9s ease-in-out infinite}@keyframes haloBreath{0%,100%{transform:scale(.84);opacity:.42}50%{transform:scale(1.18);opacity:1}}
