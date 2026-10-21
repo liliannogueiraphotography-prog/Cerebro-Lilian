@@ -11,17 +11,55 @@ const palette: Record<string,string> = { metamorfose:'#f2a7bf', luma:'#76b9ef', 
 function coreColor(title:string){const name=title.toLowerCase();if(name.includes('metamorf'))return palette.metamorfose;if(name.includes('luma'))return palette.luma;if(name.includes('fotografia')||name.includes('estúdio')||name.includes('estudio'))return palette.fotografia;if(name.includes('vida'))return palette.vida;if(name.includes('financeiro'))return palette.financeiro;if(name.includes('marketing'))return palette.marketing;return palette.default}
 function rootFor(node:RawNode,allNodes:RawNode[]){let current=node;const seen=new Set<string>();while(current.parent_node_id&&!seen.has(current.id)){seen.add(current.id);const parent=allNodes.find(item=>item.id===current.parent_node_id);if(!parent)break;current=parent}return current}
 function nodeColor(node:RawNode,allNodes:RawNode[]){if(node.lifecycle==='arquivado')return palette.archived;return coreColor(rootFor(node,allNodes).title)}
-function corePosition(index:number,total:number){const angle=(-Math.PI/2)+(index*Math.PI*2/Math.max(total,1));return {x:50+Math.cos(angle)*36,y:52+Math.sin(angle)*34}}
-function curvePath(x1:number,y1:number,x2:number,y2:number,bend=7){const mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,length=Math.max(Math.hypot(dx,dy),1);const sign=(x1+y1+x2+y2)%2>1?1:-1;return `M ${x1} ${y1} Q ${mx-dy/length*bend*sign} ${my+dx/length*bend*sign} ${x2} ${y2}`}
-function descendantsOf(rootId:string,allNodes:RawNode[]){const result:RawNode[]=[];const queue=[rootId];while(queue.length){const parent=queue.shift()!;allNodes.filter(node=>node.parent_node_id===parent).forEach(node=>{result.push(node);queue.push(node.id)})}return result}
+function corePosition(index:number,total:number){
+  const positions=[
+    {x:21,y:27},{x:70,y:18},{x:84,y:46},
+    {x:72,y:77},{x:31,y:82},{x:13,y:58},
+    {x:50,y:10},{x:91,y:72}
+  ];
+  return positions[index%positions.length]||{x:50,y:50}
+}
+function curvePath(x1:number,y1:number,x2:number,y2:number,bend=7){
+  const mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,length=Math.max(Math.hypot(dx,dy),1);
+  const sign=Math.sin(x1*1.71+y2*.91)>0?1:-1;
+  return `M ${x1} ${y1} Q ${mx-dy/length*bend*sign} ${my+dx/length*bend*sign} ${x2} ${y2}`
+}
+function descendantsOf(rootId:string,allNodes:RawNode[]){
+  const result:RawNode[]=[];const queue=[rootId];
+  while(queue.length){const parent=queue.shift()!;allNodes.filter(node=>node.parent_node_id===parent).forEach(node=>{result.push(node);queue.push(node.id)})}
+  return result
+}
 function layout(allNodes:RawNode[], focusNodeId:string, showAll:boolean):VisualNode[] {
-  const cores=allNodes.filter(node=>node.is_core).sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'))
-  const focus=allNodes.find(node=>node.id===focusNodeId)
-  const positions=new Map<string,{x:number;y:number}>()
-  cores.forEach((item,index)=>positions.set(item.id,corePosition(index,cores.length)))
-  if(showAll){cores.forEach((core,coreIndex)=>{const family=descendantsOf(core.id,allNodes);const origin=positions.get(core.id)!;family.forEach((item,index)=>{const angle=(index*2.399)+(coreIndex*.48);const layer=14+Math.floor(index/5)*10;positions.set(item.id,{x:Math.max(5,Math.min(95,origin.x+Math.cos(angle)*layer)),y:Math.max(8,Math.min(93,origin.y+Math.sin(angle)*layer))})})});return allNodes.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))}
-  if(!focus)return cores.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
-  const branch:RawNode[]=[focus,...descendantsOf(focus.id,allNodes).slice(0,20)];positions.set(focus.id,{x:50,y:22});branch.slice(1).forEach((item,index)=>{const total=Math.max(branch.length-1,1);const angle=Math.PI*.13+(index*Math.PI*.74/Math.max(total-1,1));const radius=25+Math.floor(index/7)*11;positions.set(item.id,{x:Math.max(8,Math.min(92,50+Math.cos(angle)*radius)),y:Math.max(46,Math.min(88,48+Math.sin(angle)*radius))})});return branch.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
+  const cores=allNodes.filter(node=>node.is_core).sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'));
+  const focus=allNodes.find(node=>node.id===focusNodeId);
+  const positions=new Map<string,{x:number;y:number}>();
+  cores.forEach((item,index)=>positions.set(item.id,corePosition(index,cores.length)));
+  const placeChildren=(root:RawNode,limit:number)=>{
+    const family=descendantsOf(root.id,allNodes).slice(0,limit);
+    family.forEach((item,index)=>{
+      const parent=allNodes.find(n=>n.id===item.parent_node_id);
+      const origin=parent?positions.get(parent.id):undefined;
+      const base=origin||positions.get(root.id)!;
+      const angle=index*2.399+((root.title.length%7)*.43);
+      const distance=item.parent_node_id===root.id?11+(index%3)*3:7+(index%4)*2;
+      positions.set(item.id,{
+        x:Math.max(4,Math.min(96,base.x+Math.cos(angle)*distance)),
+        y:Math.max(7,Math.min(94,base.y+Math.sin(angle)*distance))
+      });
+    });
+    return family;
+  };
+  if(showAll){
+    cores.forEach(core=>placeChildren(core,40));
+    return allNodes.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
+  }
+  if(!focus){
+    const overview=[...cores,...cores.flatMap(core=>placeChildren(core,5).filter(n=>n.parent_node_id===core.id))];
+    return overview.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
+  }
+  positions.set(focus.id,{x:50,y:20});
+  const branch=[focus,...placeChildren(focus,28)];
+  return branch.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
 }
 
 function textFor(node:RawNode){return node.lifecycle==='arquivado'?'Memória histórica, preservada para busca e aprendizado.':node.is_core?'Núcleo permanente. Abra no mapa para ver as relações reais que nascem dele.':`Memória ligada ao núcleo certo e ativa no contexto atual.`}
@@ -44,7 +82,7 @@ export default function App() {
     <header><div><small>SEGUNDO CÉREBRO</small><h1>Lilian</h1></div><nav><button className={view==='map'?'active':''} onClick={()=>setView('map')}>Mapa</button><button className={view==='executor'?'active':''} onClick={()=>setView('executor')}>Plano executor</button><span>Memórias</span><span>Agentes</span></nav><p><i/> {state==='ready'?'memória central ativa':'memória aguardando conexão'} · {session.user.email}<button className="signout" onClick={()=>void supabase?.auth.signOut()}>Sair</button></p></header>
     {view==='executor'?<ExecutorPanel/>:<>
     <section className="teach"><div>✦</div><p><b>Ensinar algo novo ao Cérebro</b><span>Escreva, cole um link ou solte um arquivo. Eu leio, entendo e guardo no lugar certo.</span></p><button>→</button></section>
-    <section className={`workspace ${fullScreen?'map-fullscreen':''}`}><div className="map"><div className="map-title"><div><small>MAPA NEURAL</small><h2>Seu cérebro conectado</h2></div><p><button onClick={openWholeBrain}>ver cérebro inteiro</button><button onClick={()=>setFullScreen(value=>!value)}>{fullScreen?'fechar tela':'tela grande'}</button></p></div><div className="canvas gold-canvas"><div className="map-guidance">{showAll?'Visão completa: cada cor mostra uma área da sua vida. Toque em um neurônio para entrar nela.':focusNodeId?'Você abriu uma área. As memórias desta ramificação mantêm a mesma cor.':'O núcleo central liga todos os universos. Toque em uma área para abrir suas ramificações.'}</div><svg viewBox="0 0 100 100" preserveAspectRatio="none">{(!focusNodeId||showAll)&&cores.map((core,index)=>{const p=corePosition(index,cores.length);return <path key={`hub-${core.id}`} d={curvePath(50,52,p.x,p.y,4)} className="hub-path" style={{'--path':coreColor(core.title)} as React.CSSProperties}/>})}{focusNodeId&&!showAll&&<path d={curvePath(50,52,50,22,5)} className="hub-path bright"/>}{relations.map(link=>{const from=lookup.get(link.from_node_id),to=lookup.get(link.to_node_id);if(!from||!to)return null;const cross=rootFor(from,rawNodes).id!==rootFor(to,rawNodes).id;const bright=focusNodeId===from.id||focusNodeId===to.id||selectedId===from.id||selectedId===to.id;const midX=(from.x+to.x)/2,midY=(from.y+to.y)/2;return <g key={link.id}><path d={curvePath(from.x,from.y,to.x,to.y,showAll?4:7)} className={`${bright?'bright':''} ${cross?'cross':''}`} style={{'--path':'#d8b65e'} as React.CSSProperties}/>{(cross||bright)&&<circle className="synapse" cx={midX} cy={midY} r=".45"/>}</g>})}</svg><button className="brain-hub" onClick={resetMap} aria-label="Voltar ao núcleo central"><svg className="butterfly" viewBox="0 0 64 64" aria-hidden="true"><path d="M30 31C20 12 8 13 10 27c1 8 9 12 20 8M34 31c10-19 22-18 20-4-1 8-9 12-20 8M31 33c-7 10-4 18 1 22 5-4 8-12 1-22M33 33c7 10 4 18-1 22-5-4-8-12-1-22" /><path className="butterfly-body" d="M32 25v17" /></svg></button>{nodes.map(item=><button key={item.id} onClick={()=>chooseNode(item)} className={`node neuron ${item.is_core?'major core':''} ${item.id===focusNodeId?'expanded':''} ${item.lifecycle==='arquivado'?'archived':''} ${selectedId===item.id?'selected':''}`} style={{left:`${item.x}%`,top:`${item.y}%`,'--c':item.color,'--size':`${item.visual_size}px`} as React.CSSProperties}><i/><span>{item.title}</span>{item.is_core&&<b>explorar</b>}</button>)}{state==='empty'&&<div className="empty-graph"><b>O mapa nasce da sua memória real.</b><span>Assim que o banco central for conectado, projetos, pessoas, decisões, produtos e relações aparecem aqui sozinhos.</span></div>}<em>{showAll?'Visão completa do cérebro. Use tela grande para explorar com calma.':focusNodeId?'Você está vendo apenas esta ramificação, sem misturar áreas diferentes.':'O núcleo central une suas áreas. As demais conexões surgem da memória real.'}</em></div></div>
+    <section className={`workspace ${fullScreen?'map-fullscreen':''}`}><div className="map"><div className="map-title"><div><small>MAPA NEURAL</small><h2>Seu cérebro conectado</h2></div><p><button onClick={openWholeBrain}>ver cérebro inteiro</button><button onClick={()=>setFullScreen(value=>!value)}>{fullScreen?'fechar tela':'tela grande'}</button></p></div><div className="canvas gold-canvas"><div className="map-guidance">{showAll?'Visão completa: cada cor mostra uma área da sua vida. Toque em um neurônio para entrar nela.':focusNodeId?'Você abriu uma área. As memórias desta ramificação mantêm a mesma cor.':'Toque em qualquer nome para abrir sua ramificação. Cada ponto nasce de uma memória real.'}</div><svg viewBox="0 0 100 100" preserveAspectRatio="none">{(!focusNodeId||showAll)&&cores.map((core,index)=>{const p=corePosition(index,cores.length);return <path key={`hub-${core.id}`} d={curvePath(50,52,p.x,p.y,4)} className="hub-path" style={{'--path':coreColor(core.title)} as React.CSSProperties}/>})}{focusNodeId&&!showAll&&<path d={curvePath(50,52,50,22,5)} className="hub-path bright"/>}{relations.map(link=>{const from=lookup.get(link.from_node_id),to=lookup.get(link.to_node_id);if(!from||!to)return null;const cross=rootFor(from,rawNodes).id!==rootFor(to,rawNodes).id;const bright=focusNodeId===from.id||focusNodeId===to.id||selectedId===from.id||selectedId===to.id;const midX=(from.x+to.x)/2,midY=(from.y+to.y)/2;return <g key={link.id}><path d={curvePath(from.x,from.y,to.x,to.y,showAll?4:7)} className={`${bright?'bright':''} ${cross?'cross':''}`} style={{'--path':'#d8b65e'} as React.CSSProperties}/>{(cross||bright)&&<circle className="synapse" cx={midX} cy={midY} r=".45"/>}</g>})}</svg><button className="brain-hub" onClick={resetMap} aria-label="Voltar ao núcleo central"><svg className="butterfly" viewBox="0 0 64 64" aria-hidden="true"><path d="M30 31C20 12 8 13 10 27c1 8 9 12 20 8M34 31c10-19 22-18 20-4-1 8-9 12-20 8M31 33c-7 10-4 18 1 22 5-4 8-12 1-22M33 33c7 10 4 18-1 22-5-4-8-12-1-22" /><path className="butterfly-body" d="M32 25v17" /></svg></button>{nodes.map(item=><button key={item.id} onClick={()=>chooseNode(item)} className={`node neuron ${item.is_core?'major core':''} ${item.id===focusNodeId?'expanded':''} ${item.lifecycle==='arquivado'?'archived':''} ${selectedId===item.id?'selected':''}`} style={{left:`${item.x}%`,top:`${item.y}%`,'--c':item.color,'--size':`${item.visual_size}px`} as React.CSSProperties}><i/><span>{item.title}</span></button>)}{state==='empty'&&<div className="empty-graph"><b>O mapa nasce da sua memória real.</b><span>Assim que o banco central for conectado, projetos, pessoas, decisões, produtos e relações aparecem aqui sozinhos.</span></div>}<em>{showAll?'Visão completa do cérebro. Use tela grande para explorar com calma.':focusNodeId?'Você está vendo apenas esta ramificação, sem misturar áreas diferentes.':'O núcleo central une suas áreas. As demais conexões surgem da memória real.'}</em></div></div>
       <aside className="detail"><small>MEMÓRIA SELECIONADA</small>{selected?<><div style={{'--c':selected.color} as React.CSSProperties}>✦</div><h3>{selected.title}</h3><p>{textFor(selected)}</p><section><b>{selected.degree}</b><span>conexões</span><b>{selected.frequency}</b><span>usos no histórico</span></section><button>Ver tudo que está ligado a isso <strong>→</strong></button></>:<><div>◌</div><h3>Memória central</h3><p>Conecte o banco para ver sua vida real se organizando aqui.</p></>}<footer>◌ <span>Antes de agir, qualquer agente consulta estas conexões.</span></footer></aside>
     </section>
     <section className="ask"><div><i>✦</i><p><b>Peça algo ao Cérebro</b><span>Ele encontra o contexto e escolhe quem deve agir.</span></p></div><input value={prompt} onChange={event=>setPrompt(event.target.value)} onKeyDown={event=>event.key==='Enter'&&ask()} placeholder="Ex.: veja o que já decidimos sobre os produtos aprovados da Luma"/><button onClick={ask}>enviar ↗</button></section>{answer&&<p className="answer">{answer}</p>}
