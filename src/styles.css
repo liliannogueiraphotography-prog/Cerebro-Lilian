@@ -56,3 +56,17 @@
 
 /* Núcleos de área: aro neon fino, sem halo volumoso */
 .node.neuron.major:before{display:none}.node.neuron.major i,.node.neuron:not(.major) i{background:#070806;border:1.35px solid var(--c);box-shadow:0 0 3px color-mix(in srgb,var(--c) 95%,transparent),0 0 8px color-mix(in srgb,var(--c) 68%,transparent)!important}.node.neuron.major i{box-shadow:0 0 3px color-mix(in srgb,var(--c) 100%,transparent),0 0 9px color-mix(in srgb,var(--c) 75%,transparent)!important}.node.neuron.selected i,.node.neuron.expanded i{box-shadow:0 0 4px color-mix(in srgb,var(--c) 100%,transparent),0 0 12px color-mix(in srgb,var(--c) 82%,transparent)!important}
+
+
+/* Mapa neural: fundo discreto, luz concentrada nas conexões */
+.gold-canvas{background:#030402;background-image:radial-gradient(rgba(221,187,97,.035) .45px,transparent .65px);background-size:24px 24px}
+.gold-canvas:after{background:radial-gradient(circle at 50% 52%,rgba(190,140,38,.07),transparent 18%),radial-gradient(circle at 50% 52%,transparent 24%,rgba(0,0,0,.18) 85%)}
+.gold-canvas path,.gold-canvas path.hub-path{stroke:#d1af5b;stroke-width:.12;opacity:.62}.gold-canvas path.hub-path{stroke-width:.17;opacity:.82}.gold-canvas path.bright{stroke:#ffe09a;stroke-width:.25;filter:drop-shadow(0 0 2px rgba(255,211,104,.8))}.gold-canvas .synapse{fill:#fff0b4;filter:drop-shadow(0 0 2px #e7b84c);animation:synapseBlink 2.4s ease-in-out infinite}@keyframes synapseBlink{0%,100%{opacity:.18;transform:scale(.55)}45%{opacity:1;transform:scale(1.35)}}
+
+/* Borboleta: símbolo central de metamorfose, feita apenas de luz */
+.brain-hub{width:68px;height:68px;border-color:#f4d37d;background:radial-gradient(circle at 36% 27%,#fff8d3 0 3%,#f2d27b 12%,#b68827 34%,#382809 63%,#090803 78%);box-shadow:0 0 13px rgba(235,184,59,.72),0 0 34px rgba(218,162,45,.38),inset 0 0 17px rgba(255,233,159,.25)}
+.brain-hub:before{inset:-34px;border:0;background:radial-gradient(circle,rgba(243,197,81,.26),rgba(220,156,27,.09) 35%,transparent 68%);filter:blur(6px);animation:haloBreath 3.2s ease-in-out infinite}
+.butterfly{position:relative;z-index:2;width:34px;height:34px;overflow:visible;filter:drop-shadow(0 0 4px rgba(255,239,175,.95))}.butterfly path{fill:rgba(255,244,199,.07);stroke:#fff0b7;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round}.butterfly .butterfly-body{fill:none;stroke:#fff7d9;stroke-width:1.2}.brain-hub .brain-letter{display:none}
+
+/* Aro de cada área: somente uma linha neon precisa */
+.node.neuron.major i,.node.neuron:not(.major) i{background:#050604;border:1.2px solid var(--c);box-shadow:0 0 3px color-mix(in srgb,var(--c) 90%,transparent),0 0 8px color-mix(in srgb,var(--c) 62%,transparent)!important}.node.neuron.major i{width:18px!important;height:18px!important}.node.neuron.major:after{content:'';position:absolute;width:3px;height:3px;border-radius:50%;background:#fff2bb;box-shadow:0 0 4px #f5c961;top:calc(50% - 8px);left:calc(50% + 7px);opacity:.9}
