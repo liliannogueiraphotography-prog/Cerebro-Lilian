@@ -52,3 +52,7 @@
 
 
 .brain-hub .brain-letter{font:600 31px/1 Georgia,serif;letter-spacing:-.12em;padding-right:3px;color:#fff4c9;text-shadow:0 1px 0 #7b5217,0 0 12px rgba(255,239,178,.8)}
+
+
+/* Núcleos de área: aro neon fino, sem halo volumoso */
+.node.neuron.major:before{display:none}.node.neuron.major i,.node.neuron:not(.major) i{background:#070806;border:1.35px solid var(--c);box-shadow:0 0 3px color-mix(in srgb,var(--c) 95%,transparent),0 0 8px color-mix(in srgb,var(--c) 68%,transparent)!important}.node.neuron.major i{box-shadow:0 0 3px color-mix(in srgb,var(--c) 100%,transparent),0 0 9px color-mix(in srgb,var(--c) 75%,transparent)!important}.node.neuron.selected i,.node.neuron.expanded i{box-shadow:0 0 4px color-mix(in srgb,var(--c) 100%,transparent),0 0 12px color-mix(in srgb,var(--c) 82%,transparent)!important}
