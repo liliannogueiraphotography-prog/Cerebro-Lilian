@@ -4,6 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const allowedEmail = "lilian.nogueira@live.com";
 const allowedOrigins = new Set([
   "https://cerebro-lilian-preview.lilian-nogueira.chatgpt.site",
+  "https://liliannogueiraphotography-prog.github.io",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
 ]);
