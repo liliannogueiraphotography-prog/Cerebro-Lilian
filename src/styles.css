@@ -45,3 +45,7 @@
 
 /* O núcleo pulsa pela luz, sem anel externo */
 .brain-hub:before{inset:-29px;border:0;background:radial-gradient(circle,rgba(244,197,79,.34) 0%,rgba(213,154,38,.16) 29%,rgba(196,130,26,.055) 52%,transparent 72%);filter:blur(5px);animation:haloBreath 2.9s ease-in-out infinite}@keyframes haloBreath{0%,100%{transform:scale(.84);opacity:.42}50%{transform:scale(1.18);opacity:1}}
+
+
+/* Sem anéis: o núcleo central respira apenas por halo */
+.brain-hub{box-shadow:0 0 16px rgba(220,171,58,.62),0 0 38px rgba(220,171,58,.38),inset 0 0 16px rgba(255,224,137,.20)}
