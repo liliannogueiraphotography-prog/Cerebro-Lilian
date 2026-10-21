@@ -49,3 +49,6 @@
 
 /* Sem anéis: o núcleo central respira apenas por halo */
 .brain-hub{box-shadow:0 0 16px rgba(220,171,58,.62),0 0 38px rgba(220,171,58,.38),inset 0 0 16px rgba(255,224,137,.20)}
+
+
+.brain-hub .brain-letter{font:600 31px/1 Georgia,serif;letter-spacing:-.12em;padding-right:3px;color:#fff4c9;text-shadow:0 1px 0 #7b5217,0 0 12px rgba(255,239,178,.8)}
