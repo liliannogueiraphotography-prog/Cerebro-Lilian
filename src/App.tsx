@@ -19,9 +19,9 @@ function layout(allNodes:RawNode[], focusNodeId:string, showAll:boolean):VisualN
   const focus=allNodes.find(node=>node.id===focusNodeId)
   const positions=new Map<string,{x:number;y:number}>()
   cores.forEach((item,index)=>positions.set(item.id,corePosition(index,cores.length)))
-  if(!focus&&!showAll)return cores.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
   if(showAll){cores.forEach((core,coreIndex)=>{const family=descendantsOf(core.id,allNodes);const origin=positions.get(core.id)!;family.forEach((item,index)=>{const angle=(index*2.399)+(coreIndex*.48);const layer=14+Math.floor(index/5)*10;positions.set(item.id,{x:Math.max(5,Math.min(95,origin.x+Math.cos(angle)*layer)),y:Math.max(8,Math.min(93,origin.y+Math.sin(angle)*layer))})})});return allNodes.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))}
-  const branch=[focus,...descendantsOf(focus.id,allNodes).slice(0,20)];positions.set(focus.id,{x:50,y:22});branch.slice(1).forEach((item,index)=>{const total=Math.max(branch.length-1,1);const angle=Math.PI*.13+(index*Math.PI*.74/Math.max(total-1,1));const radius=25+Math.floor(index/7)*11;positions.set(item.id,{x:Math.max(8,Math.min(92,50+Math.cos(angle)*radius)),y:Math.max(46,Math.min(88,48+Math.sin(angle)*radius))})});return branch.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
+  if(!focus)return cores.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
+  const branch:RawNode[]=[focus,...descendantsOf(focus.id,allNodes).slice(0,20)];positions.set(focus.id,{x:50,y:22});branch.slice(1).forEach((item,index)=>{const total=Math.max(branch.length-1,1);const angle=Math.PI*.13+(index*Math.PI*.74/Math.max(total-1,1));const radius=25+Math.floor(index/7)*11;positions.set(item.id,{x:Math.max(8,Math.min(92,50+Math.cos(angle)*radius)),y:Math.max(46,Math.min(88,48+Math.sin(angle)*radius))})});return branch.map(item=>({...item,...(positions.get(item.id)||{x:50,y:50}),color:nodeColor(item,allNodes)}))
 }
 
 function textFor(node:RawNode){return node.lifecycle==='arquivado'?'Memória histórica, preservada para busca e aprendizado.':node.is_core?'Área permanente da sua vida e dos seus negócios.':`Ligado ao núcleo certo e ativo no seu contexto atual.`}
